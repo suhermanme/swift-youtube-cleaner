@@ -18,7 +18,7 @@ The development build provides:
 - selector and authentication diagnostics; and
 - persistent browser, delay, debug, and backend settings.
 
-The app currently uses the existing sibling Python project as its automation worker. It is fully usable on this development Mac, but it is not yet a self-contained distribution for other Macs. See [Distribution status](#distribution-status).
+The app currently uses the separate [YouTube Cleaner Python project](https://github.com/suhermanme/youtube-cleaner) as its automation worker. Both repositories must be installed for now; the generated app bundle is not yet a self-contained distribution. See [Distribution status](#distribution-status).
 
 ## Architecture
 
@@ -48,24 +48,31 @@ The Python engine remains authoritative for account matching, cleanup planning, 
 ## Requirements
 
 - macOS 14 or later
-- a Swift 6-capable Xcode command-line toolchain
+- Git
+- Xcode Command Line Tools with a Swift 6-capable toolchain
+- Python 3.12 or later
+- [`uv`](https://docs.astral.sh/uv/)
 - Google Chrome for the recommended native-login workflow
-- the existing Python project at `~/Documents/02_MULTI_SYNC/04_OPREK/WORKSPACE/YT_Clenaer` by default
-- a prepared Python virtual environment at `YT_Clenaer/.venv`
+- the [YouTube Cleaner Python worker](https://github.com/suhermanme/youtube-cleaner)
 
-Prepare the Python worker if necessary:
+## Installation
+
+Clone and prepare the Python worker first:
 
 ```sh
-cd ../YT_Clenaer
+git clone git@github.com:suhermanme/youtube-cleaner.git
+cd youtube-cleaner
 uv sync
 uv run playwright install chromium
 ```
 
-## Build and test
-
-From this repository:
+Then clone and build this macOS application. The repositories do not have to be
+siblings; the worker directory is selected from the app's Settings window.
 
 ```sh
+cd ..
+git clone git@github.com:suhermanme/swift-youtube-cleaner.git
+cd swift-youtube-cleaner
 xcrun swift test
 ./scripts/build-app.sh
 ```
@@ -76,7 +83,16 @@ The build script creates and ad-hoc signs:
 dist/YouTube Cleaner.app
 ```
 
-Open that application from Finder. Normal operation does not require Terminal.
+Open that application from Finder. Day-to-day operation does not require Terminal.
+
+## Build and test
+
+After installation, rebuild and test from this repository with:
+
+```sh
+xcrun swift test
+./scripts/build-app.sh
+```
 
 For a debug bundle:
 
@@ -86,16 +102,19 @@ For a debug bundle:
 
 ## First run
 
-The app initially looks for the Python project at:
+On first launch, open **YouTube Cleaner → Settings** and choose the cloned
+`youtube-cleaner` worker directory. Select the folder containing both of these
+paths:
 
 ```text
-~/Documents/02_MULTI_SYNC/04_OPREK/WORKSPACE/YT_Clenaer
+<worker>/.venv/bin/python
+<worker>/src/youtube_cleaner
 ```
 
-If it is elsewhere, open **YouTube Cleaner → Settings** and choose the folder containing both `src/youtube_cleaner` and `.venv/bin/python`. You can also set the development override before launching the app:
+Developers can instead provide the worker path before launching the app:
 
 ```sh
-export YOUTUBE_CLEANER_PROJECT=/absolute/path/to/YT_Clenaer
+export YOUTUBE_CLEANER_PROJECT=/absolute/path/to/youtube-cleaner
 ```
 
 The Library view should no longer show a backend warning before an operation is started.
@@ -179,7 +198,7 @@ Quit every running copy of YouTube Cleaner, then open the newly built applicatio
 
 ### Finish Login cannot close Chrome
 
-Make sure the window belongs to the dedicated YouTube Cleaner profile. Quit that Chrome instance manually, then click **Try Again**. The app will not terminate an unrelated Chrome PID unless it owns the dedicated profile lock.
+Make sure the window belongs to the dedicated YouTube Cleaner profile. Quit that Chrome instance manually, then click **Try Again**. The app tracks and closes only the separate Chrome application instance that it launched for this workflow.
 
 ### An operation exits with a nonzero code
 
@@ -194,11 +213,12 @@ Click **Refresh** in the Jobs view and verify the worker's state directory. A jo
 ```text
 Package.swift
 Resources/
+  AppIcon.icns           Multi-resolution application icon
   Info.plist
 Sources/
   YouTubeCleanerCore/       Command validation and progress parsing
   YouTubeCleanerApp/        SwiftUI application and worker bridge
-    Views/                  Library, Jobs, Diagnostics, Activity, Settings
+    Views/                  Library, Jobs, Diagnostics, Help, Activity, Settings
 Tests/
   YouTubeCleanerCoreTests/  Command and stream-protocol tests
 scripts/
@@ -211,8 +231,11 @@ The generated `.app` is ad-hoc signed for local development. A portable release 
 
 1. bundling the Python runtime, application modules, and Playwright resources;
 2. resolving the worker from the application bundle rather than a sibling project;
-3. adding production artwork and an `.icns` app icon;
-4. signing with an Apple Developer ID certificate; and
-5. notarizing and stapling the final application bundle.
+3. signing with an Apple Developer ID certificate; and
+4. notarizing and stapling the final application bundle.
 
 Until that packaging work is complete, do not move the app to another Mac without also installing and selecting a compatible Python worker project.
+
+## License
+
+YouTube Cleaner for macOS is available under the [MIT License](LICENSE).
