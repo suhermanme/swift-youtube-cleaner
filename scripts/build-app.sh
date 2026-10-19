@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
+trap 'status=$?; printf "::error file=scripts/build-app.sh,line=%s::failed command: %s\n" "$LINENO" "$BASH_COMMAND" >&2; exit "$status"' ERR
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
