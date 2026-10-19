@@ -1,4 +1,3 @@
-import AppKit
 import SwiftUI
 import YouTubeCleanerCore
 
@@ -8,16 +7,14 @@ struct SettingsView: View {
     var body: some View {
         Form {
             Section("Automation backend") {
-                HStack {
-                    TextField("Python project", text: $model.backendProjectPath)
-                        .textFieldStyle(.roundedBorder)
-                    Button("Choose…") { chooseBackendFolder() }
-                }
                 Label(
                     model.backend.validationMessage,
                     systemImage: model.backend.isValid ? "checkmark.circle.fill" : "exclamationmark.triangle.fill"
                 )
                 .foregroundStyle(model.backend.isValid ? .green : .orange)
+                Text("The worker, Python runtime, packages, and Chromium are included in this app.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
             }
 
             Section("Browser") {
@@ -43,15 +40,4 @@ struct SettingsView: View {
         .padding(8)
     }
 
-    private func chooseBackendFolder() {
-        let panel = NSOpenPanel()
-        panel.title = "Choose the YouTube Cleaner Python project"
-        panel.canChooseDirectories = true
-        panel.canChooseFiles = false
-        panel.allowsMultipleSelection = false
-        panel.directoryURL = model.backend.projectDirectory
-        if panel.runModal() == .OK, let url = panel.url {
-            model.backendProjectPath = url.path
-        }
-    }
 }

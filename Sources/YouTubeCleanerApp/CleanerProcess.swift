@@ -56,7 +56,7 @@ final class CleanerProcess {
         let inputPipe = Pipe()
         process.executableURL = configuration.pythonExecutable
         process.arguments = arguments
-        process.currentDirectoryURL = configuration.projectDirectory
+        process.currentDirectoryURL = configuration.sourceDirectory.deletingLastPathComponent()
         process.standardOutput = outputPipe
         process.standardError = outputPipe
         process.standardInput = inputPipe
@@ -67,6 +67,13 @@ final class CleanerProcess {
         environment["PYTHONUNBUFFERED"] = "1"
         environment["YOUTUBE_CLEANER_GUI_PROGRESS"] = "1"
         environment["COLUMNS"] = "200"
+        let resourcePath = configuration.sourceDirectory.deletingLastPathComponent().path
+        let packagePath = configuration.pythonPackagesDirectory.path
+        environment["PYTHONPATH"] = [resourcePath, packagePath, environment["PYTHONPATH"]]
+            .compactMap { $0 }
+            .joined(separator: ":")
+        environment["PLAYWRIGHT_BROWSERS_PATH"] = resourcePath
+            + "/playwright-browsers"
         process.environment = environment
 
         outputPipe.fileHandleForReading.readabilityHandler = { [weak self] handle in

@@ -74,8 +74,8 @@ struct DiagnosticsView: View {
 
                 GroupBox("Runtime") {
                     VStack(alignment: .leading, spacing: 10) {
-                        LabeledContent("Python executable", value: model.backend.pythonExecutable.path)
-                        LabeledContent("Project directory", value: model.backend.projectDirectory.path)
+                        LabeledContent("Bundled Python runtime", value: model.backend.pythonExecutable.path)
+                        LabeledContent("Worker source", value: model.backend.sourceDirectory.path)
                         LabeledContent("Action delay", value: String(format: "%.2f seconds", model.delay))
                     }
                     .font(.callout)

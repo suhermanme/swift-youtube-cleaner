@@ -1,6 +1,6 @@
 # YouTube Cleaner for macOS
 
-YouTube Cleaner is a native SwiftUI desktop application for inspecting and cleaning a YouTube library. It presents the existing safety-checked Python/Playwright automation engine as a normal macOS app: launch it from Finder or the Dock, complete the workflow with native controls, and follow progress inside the app instead of using Terminal.
+YouTube Cleaner is a native SwiftUI desktop application for inspecting and cleaning a YouTube library. Its Python/Playwright automation worker is included in this repository and application bundle; no separate worker checkout is required.
 
 > Browser automation depends on YouTube's rendered website and can be affected by UI changes. The worker stops on ambiguous selectors or unverifiable changes instead of guessing.
 
@@ -16,9 +16,9 @@ The development build provides:
 - live progress, readable activity output, and safe interruption;
 - local job history with detail and resume controls;
 - selector and authentication diagnostics; and
-- persistent browser, delay, debug, and backend settings.
+- persistent browser, delay, and debug settings.
 
-The app currently uses the separate [YouTube Cleaner Python project](https://github.com/suhermanme/youtube-cleaner) as its automation worker. Both repositories must be installed for now; the generated app bundle is not yet a self-contained distribution. See [Distribution status](#distribution-status).
+The Python worker, CPython 3.14 runtime, required Python packages, and Playwright Chromium are bundled into the built app. Runtime operations require no separate worker checkout, Python install, `pip install`, or browser install.
 
 ## Architecture
 
@@ -30,10 +30,9 @@ The app currently uses the separate [YouTube Cleaner Python project](https://git
 └───────────────┬───────────────┘
                 │ background Process + structured progress records
 ┌───────────────▼───────────────┐
-│ Python automation worker      │
+│ Bundled Python worker          │
 │ Planning, safety, checkpoints │
 │ Playwright and page selectors │
-└───────────────┬───────────────┘
                 │ local CDP connection
 ┌───────────────▼───────────────┐
 │ Dedicated Chrome profile      │
@@ -50,27 +49,16 @@ The Python engine remains authoritative for account matching, cleanup planning, 
 - macOS 14 or later
 - Git
 - Xcode Command Line Tools with a Swift 6-capable toolchain
-- Python 3.12 or later
-- [`uv`](https://docs.astral.sh/uv/)
-- Google Chrome for the recommended native-login workflow
-- the [YouTube Cleaner Python worker](https://github.com/suhermanme/youtube-cleaner)
+- `uv` and internet access when building (the build script downloads and packages CPython, worker dependencies, and Chromium)
+- Google Chrome is optional; it supports the native-login workflow. Bundled Playwright Chromium is available without Chrome.
 
 ## Installation
 
-Clone and prepare the Python worker first:
+The build script bundles a compatible Python runtime and worker dependencies:
+
+Build the macOS application:
 
 ```sh
-git clone git@github.com:suhermanme/youtube-cleaner.git
-cd youtube-cleaner
-uv sync
-uv run playwright install chromium
-```
-
-Then clone and build this macOS application. The repositories do not have to be
-siblings; the worker directory is selected from the app's Settings window.
-
-```sh
-cd ..
 git clone git@github.com:suhermanme/swift-youtube-cleaner.git
 cd swift-youtube-cleaner
 xcrun swift test
@@ -100,24 +88,7 @@ For a debug bundle:
 ./scripts/build-app.sh debug
 ```
 
-## First run
-
-On first launch, open **YouTube Cleaner → Settings** and choose the cloned
-`youtube-cleaner` worker directory. Select the folder containing both of these
-paths:
-
-```text
-<worker>/.venv/bin/python
-<worker>/src/youtube_cleaner
-```
-
-Developers can instead provide the worker path before launching the app:
-
-```sh
-export YOUTUBE_CLEANER_PROJECT=/absolute/path/to/youtube-cleaner
-```
-
-The Library view should no longer show a backend warning before an operation is started.
+The worker, Python runtime, packages, and Chromium are included in the application bundle. No runtime installation or worker path selection is needed.
 
 ## Native Chrome login
 
@@ -181,16 +152,7 @@ The Swift interface reads the same state used by the Python worker:
 
 ## Troubleshooting
 
-### The app reports that the backend is missing
-
-Open **Settings** and select the Python project directory. Confirm that these paths exist:
-
-```text
-<project>/.venv/bin/python
-<project>/src/youtube_cleaner
-```
-
-Run `uv sync` in the Python project if the virtual environment is absent.
+The worker, Python runtime, packages, and browser are bundled. Rebuild the app with `./scripts/build-app.sh` if the bundle reports a missing runtime component.
 
 ### Native login still displays the old console-style instructions
 
@@ -225,16 +187,22 @@ scripts/
   build-app.sh              Release/debug .app bundler
 ```
 
-## Distribution status
+The generated `.app` is ad-hoc signed for local development. A portable release
+still requires signing with an Apple Developer ID certificate and
+notarizing/stapling the bundle. The app bundle includes its Python runtime,
+worker dependencies, and Playwright Chromium.
 
-The generated `.app` is ad-hoc signed for local development. A portable release still requires:
+## CI and releases
 
-1. bundling the Python runtime, application modules, and Playwright resources;
-2. resolving the worker from the application bundle rather than a sibling project;
-3. signing with an Apple Developer ID certificate; and
-4. notarizing and stapling the final application bundle.
+Pull requests and pushes to `main` run `xcrun swift test` on macOS. Pushing a
+tag matching the app version (for example, `v0.1.0`) runs the tests, builds the
+self-contained app, and publishes a ZIP plus SHA-256 checksum as a GitHub
+release. Releases use this repository's MIT license.
 
-Until that packaging work is complete, do not move the app to another Mac without also installing and selecting a compatible Python worker project.
+Release assets are ad-hoc signed for local use. Developer ID signing and
+notarization are not configured; macOS may require users to approve the app
+before first launch.
+
 
 ## License
 

@@ -47,8 +47,8 @@ struct HelpView: View {
 
     private var setupSection: some View {
         HelpSection(title: "First-time setup", icon: "gearshape.2") {
-            GuideStep(number: 1, title: "Check the automation backend") {
-                Text("Open YouTube Cleaner → Settings and select the Python project if the Library shows a backend warning.")
+            GuideStep(number: 1, title: "Check the bundled runtime") {
+                Text("Open Settings and confirm the bundled worker and Python runtime are ready. No separate worker project is needed.")
             }
             GuideStep(number: 2, title: "Sign in with the dedicated profile") {
                 Text("Select Google Chrome in the toolbar, choose Native Chrome login, sign in to YouTube, then return and choose Finish Login.")
@@ -117,7 +117,7 @@ struct HelpView: View {
 
     private var troubleshootingSection: some View {
         HelpSection(title: "If something goes wrong", icon: "wrench.and.screwdriver") {
-            HelpTerm(term: "Backend missing", explanation: "Open Settings and choose the project containing both src/youtube_cleaner and .venv/bin/python.")
+            HelpTerm(term: "Bundled runtime missing", explanation: "Rebuild the application with ./scripts/build-app.sh to restore its worker, Python packages, and Chromium.")
             HelpTerm(term: "Not signed in", explanation: "Repeat Native Chrome login, close it with Finish Login, and run Verify account again.")
             HelpTerm(term: "Operation failed", explanation: "Read the final messages in Activity. Enable debug diagnostics in Settings before repeating a safe, read-only operation.")
             HelpTerm(term: "Interrupted cleanup", explanation: "Open Jobs, select its checkpoint, show the details, and use Resume One Item before resuming the full job.")

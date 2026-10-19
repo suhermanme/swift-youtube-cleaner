@@ -16,7 +16,8 @@ let package = Package(
         ),
         .executableTarget(
             name: "YouTubeCleanerApp",
-            dependencies: ["YouTubeCleanerCore"]
+            dependencies: ["YouTubeCleanerCore"],
+            exclude: ["youtube_cleaner"]
         ),
         .testTarget(
             name: "YouTubeCleanerCoreTests",

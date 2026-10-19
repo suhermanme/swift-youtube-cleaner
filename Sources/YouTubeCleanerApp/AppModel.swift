@@ -5,15 +5,11 @@ import YouTubeCleanerCore
 @MainActor
 final class AppModel: ObservableObject {
     private enum DefaultsKey {
-        static let backendPath = "backendProjectPath"
         static let browser = "selectedBrowser"
         static let delay = "actionDelay"
         static let debug = "debugMode"
     }
 
-    @Published var backendProjectPath: String {
-        didSet { defaults.set(backendProjectPath, forKey: DefaultsKey.backendPath) }
-    }
     @Published var browser: BrowserChoice {
         didSet { defaults.set(browser.rawValue, forKey: DefaultsKey.browser) }
     }
@@ -49,8 +45,6 @@ final class AppModel: ObservableObject {
 
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
-        backendProjectPath = defaults.string(forKey: DefaultsKey.backendPath)
-            ?? BackendConfiguration.defaultProjectPath()
         browser = BrowserChoice(
             rawValue: defaults.string(forKey: DefaultsKey.browser) ?? "chrome"
         ) ?? .chrome
@@ -61,7 +55,7 @@ final class AppModel: ObservableObject {
     }
 
     var backend: BackendConfiguration {
-        BackendConfiguration(projectDirectory: URL(fileURLWithPath: backendProjectPath))
+        BackendConfiguration()
     }
 
     func verifyAccount() {
