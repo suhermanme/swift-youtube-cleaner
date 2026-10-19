@@ -31,6 +31,7 @@ uv pip install --python "$PYTHON_RUNTIME" --target "$BUILD_DIR/python-packages" 
   'playwright>=1.55,<2' 'pydantic>=2.11,<3' 'rich>=14,<15' 'typer>=0.16,<1'
 PYTHONPATH="$BUILD_DIR/python-packages" PLAYWRIGHT_BROWSERS_PATH="$BUILD_DIR/playwright-browsers" \
   "$PYTHON_RUNTIME" -m playwright install chromium
+xcrun swift build --disable-sandbox --scratch-path "$BUILD_DIR" -c "$CONFIGURATION"
 BIN_DIR="$(xcrun swift build --disable-sandbox --scratch-path "$BUILD_DIR" -c "$CONFIGURATION" --show-bin-path)"
 
 rm -rf "$APP_DIR"
